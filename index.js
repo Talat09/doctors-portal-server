@@ -18,6 +18,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+// middleware for verify user using json web token
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -36,6 +37,7 @@ function verifyJWT(req, res, next) {
 }
 async function run() {
   try {
+    //database connection
     const appointmentOptions = client
       .db("doctorsPortal")
       .collection("appointmentsOptions");
@@ -174,7 +176,7 @@ async function run() {
       const result = await bookingsCollection.insertOne(booking);
       res.send(result);
     });
-    //payment api system
+    //create payment  system using stripe
     app.post("/create-payment-intent", async (req, res) => {
       const booking = req.body;
       const price = booking.price;
@@ -206,7 +208,7 @@ async function run() {
       );
       res.send(result);
     });
-    //token generate
+    //token generate using json web token
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -258,6 +260,7 @@ async function run() {
       res.send(result);
     });
     //temporary to update price field on appointment options
+
     // app.get("/addPrice", async (req, res) => {
     //   const filter = {};
     //   const options = { upsert: true };
@@ -273,6 +276,7 @@ async function run() {
     //   );
     //   res.send(result);
     // });
+
     //added or create a doctors api
     app.post("/doctors", verifyJWT, verifyAdmin, async (req, res) => {
       const doctor = req.body;
@@ -295,10 +299,13 @@ async function run() {
   } finally {
   }
 }
+//call the async function
 run().catch(console.dir);
+// checking server is running or not
 app.get("/", async (req, res) => {
   res.send("Doctors portal is Running");
 });
+// listen to port is working
 app.listen(port, () => {
   console.log("Doctor portal running on Port: ", port);
 });
